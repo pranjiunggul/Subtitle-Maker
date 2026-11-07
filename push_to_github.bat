@@ -8,7 +8,7 @@ echo ======================================================================
 echo.
 
 cd /d "%~dp0"
-set "PATH=%PATH%;C:\Users\Dheandra-PC\AppData\Local\Programs\Git\cmd;C:\Users\Dheandra-PC\AppData\Local\Programs\gh"
+set "PATH=%PATH%;C:\Users\user\AppData\Local\Programs\Git\cmd;C:\Users\user\AppData\Local\Programs\gh"
 
 :: Cek apakah git remote origin sudah ada
 git remote get-url origin >nul 2>&1
