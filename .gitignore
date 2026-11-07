@@ -1,0 +1,38 @@
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Model cache directory (downloaded automatically on first run)
+models/
+*.bin
+*.safetensors
+
+# Temporary processing files
+temp/*
+!temp/.gitkeep
+
+# Output files
+output/*
+!output/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

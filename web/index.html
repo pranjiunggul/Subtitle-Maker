@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtitle Maker — Lightweight Subtitle Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🎙️</span>
+        <span class="logo-text">Subtitle Maker</span>
+        <span class="logo-badge">Lightweight Standalone</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="engineStatus" class="status-indicator">
+        <span class="status-dot"></span>
+        <span id="statusText" class="status-text">Memeriksa Engine...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Bar -->
+  <nav class="app-nav">
+    <button class="nav-tab active" data-target="tab-generate">⚡ Buat Subtitle</button>
+    <button class="nav-tab" data-target="tab-editor">🎬 Editor & Live Player</button>
+    <button class="nav-tab" data-target="tab-vocab">✏️ Kamus Istilah</button>
+    <button class="nav-tab" data-target="tab-diag">⚙️ Diagnostik Sistem</button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- ── TAB 1: GENERATE SUBTITLE ── -->
+    <div id="tab-generate" class="tab-content active">
+      
+      <!-- Upload Zone -->
+      <section class="card upload-section">
+        <div id="dropZone" class="drop-zone">
+          <div class="drop-zone-content">
+            <div class="drop-icon">📁</div>
+            <h2 class="drop-title">Tarik & Lepas File Audio / Video ke Sini</h2>
+            <p class="drop-subtitle">atau klik untuk memilih file dari komputer</p>
+            <p class="drop-formats">Mendukung: MP4, MKV, MOV, WEBM, WAV, MP3, M4A, AAC, FLAC, OGG</p>
+          </div>
+          <input type="file" id="fileInput" accept=".mp4,.mkv,.mov,.webm,.wav,.mp3,.m4a,.aac,.flac,.ogg" hidden>
+        </div>
+
+        <!-- Staged File Card -->
+        <div id="stagedFileCard" class="staged-file-card" style="display: none;">
+          <div class="staged-file-info">
+            <span class="staged-file-icon">🎬</span>
+            <div>
+              <div id="stagedFileName" class="staged-file-name">video.mp4</div>
+              <div id="stagedFileSize" class="staged-file-size">0 MB</div>
+            </div>
+          </div>
+          <button id="cancelStagedBtn" class="btn-cancel" title="Batalkan file">✕ Batal</button>
+        </div>
+
+        <!-- Narration Script Section (Collapsible) -->
+        <div class="narration-panel">
+          <button id="narrationToggle" class="narration-toggle" type="button">
+            <span class="narration-toggle-icon">📝</span>
+            <span class="narration-toggle-text">Sertakan Naskah Narasi (Forced Alignment Ground-Truth)</span>
+            <span class="narration-toggle-hint">Opsional — Subtitle 100% akurat tanpa salah dengar</span>
+            <span id="narrationArrow" class="narration-toggle-arrow">▸</span>
+          </button>
+          <div id="narrationBody" class="narration-body" style="display: none;">
+            <div class="narration-tip">
+              💡 <strong>Tips Forced Alignment:</strong> Tempelkan naskah/script asli Anda di sini. Engine akan mencocokkan kata-kata pada naskah secara otomatis dengan timing audio dari Whisper, menghasilkan subtitle dengan kata-kata 100% persis naskah Anda!
+            </div>
+            <textarea
+              id="narrationText"
+              class="narration-textarea"
+              placeholder="Tempelkan naskah narasi di sini...&#10;&#10;Contoh: Tahukah kamu, menurut Cornell Waste Management Institute, kunci kompos yang cepat jadi dan bebas bau ternyata cuma satu angka: tiga puluh banding satu..."
+              rows="6"
+            ></textarea>
+            <div class="narration-footer">
+              <span id="narrationCharCount">0 karakter</span>
+              <button id="clearNarrationBtn" class="btn-text" type="button">✕ Bersihkan Naskah</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration Settings -->
+        <div class="config-grid">
+          <div class="config-item">
+            <label for="languageSelect">Bahasa Audio</label>
+            <select id="languageSelect">
+              <option value="auto" selected>🌐 Auto Detect (Otomatis)</option>
+              <option value="id">🇮🇩 Bahasa Indonesia</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="ar">🇸🇦 العربية (Arabic)</option>
+              <option value="zh">🇨🇳 中文 (Chinese)</option>
+              <option value="ja">🇯🇵 日本語 (Japanese)</option>
+              <option value="ko">🇰🇷 한국어 (Korean)</option>
+            </select>
+          </div>
+
+          <div class="config-item">
+            <label for="modelSelect">Ukuran Model Whisper</label>
+            <select id="modelSelect">
+              <option value="base" selected>⚡ Base (Rekomendasi Hemat RAM 4GB - Cepat & Akurat)</option>
+              <option value="small">✨ Small (Akurasi Tinggi - Butuh ~500MB RAM)</option>
+              <option value="tiny">🚀 Tiny (Ultra Cepat & Paling Ringan)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Subtitle Segmentation Presets -->
+        <div class="segmentation-section">
+          <label>Format Baris & Batas Karakter (Presets)</label>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn active" data-limit="30">
+              📱 TikTok / Reels / Shorts (1 Baris ~30 Karakter)
+            </button>
+            <button type="button" class="preset-btn" data-limit="42">
+              💬 Seimbang (1 Baris ~42 Karakter)
+            </button>
+            <button type="button" class="preset-btn" data-limit="0">
+              🎬 Standard Netflix / Film (2 Baris Otomatis)
+            </button>
+          </div>
+          <div class="custom-limit-wrap">
+            <span>Atau kustomisasi batas karakter per baris:</span>
+            <input type="number" id="customCharLimit" min="10" max="100" value="30" placeholder="Contoh: 30">
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button id="generateBtn" class="btn-primary-large" style="display: none;">
+          ⚡ Mulai Generate Subtitle
+        </button>
+
+        <!-- Progress Card -->
+        <div id="progressCard" class="progress-card" style="display: none;">
+          <div class="progress-header">
+            <div class="progress-title-wrap">
+              <div class="spinner"></div>
+              <span id="progressStageText" class="progress-stage-text">Memulai proses...</span>
+            </div>
+            <span id="progressPercent" class="progress-percent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <p id="progressDetail" class="progress-detail">Mengekstrak audio via FFmpeg...</p>
+        </div>
+
+        <!-- Recent Project Banner -->
+        <div id="recentBanner" class="recent-banner" style="display: none; margin-top: 1.25rem; padding: 0.9rem 1.25rem; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: var(--radius-md); align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.4rem;">🎬</span>
+            <div>
+              <strong id="recentBannerName" style="color: #93c5fd; font-size: 0.95rem;">Lapisan Drainase...</strong>
+              <div id="recentBannerInfo" style="font-size: 0.8rem; color: var(--text-muted);">Subtitle tersimpan dan siap dibuka di editor</div>
+            </div>
+          </div>
+          <button id="recentOpenBtn" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.85rem; cursor: pointer;">Buka di Editor ➔</button>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- ── TAB 2: INTERACTIVE EDITOR & PLAYER ── -->
+    <div id="tab-editor" class="tab-content">
+      
+      <div id="emptyEditorState" class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <h3>Belum Ada Subtitle yang Dimuat</h3>
+        <p>Silakan buat subtitle terlebih dahulu di tab <strong>Buat Subtitle</strong> atau upload file media.</p>
+        <div id="recentProjectsContainer" style="margin-top: 1.5rem; display: none; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+          <h4 style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em;">Proyek Terakhir:</h4>
+          <div id="recentProjectsList"></div>
+        </div>
+        <button id="goToGenerateBtn" class="btn-primary" style="margin-top: 1.25rem;">Ke Menu Buat Subtitle</button>
+      </div>
+
+      <div id="editorContainer" class="editor-container" style="display: none;">
+        
+        <!-- Left Column: Video/Audio Player & Export Bar -->
+        <div class="editor-player-col">
+          <div class="player-wrapper">
+            <video id="mediaPlayer" controls></video>
+            <!-- Overlay Subtitle Caption -->
+            <div id="subtitleOverlay" class="subtitle-overlay"></div>
+          </div>
+
+          <!-- Video Controls Info -->
+          <div class="player-info-bar">
+            <span id="playerTime">⏱️ 00:00 / 00:00</span>
+            <span id="playerSpeed">Kecepatan: 1x</span>
+          </div>
+
+          <!-- Shift Timestamps Control -->
+          <div class="time-shift-card">
+            <label>⚡ Geser Semua Waktu Subtitle (Sync Offset):</label>
+            <div class="time-shift-btns">
+              <button id="shiftMinus500" class="btn-secondary">-500ms</button>
+              <button id="shiftMinus100" class="btn-secondary">-100ms</button>
+              <button id="shiftPlus100" class="btn-secondary">+100ms</button>
+              <button id="shiftPlus500" class="btn-secondary">+500ms</button>
+            </div>
+          </div>
+
+          <!-- Export & Download Panel -->
+          <div class="export-card">
+            <h4>💾 Unduh Subtitle:</h4>
+            <div class="download-grid">
+              <button id="dlSrtBtn" class="btn-download">
+                <span class="btn-icon">📄</span>
+                <span>Unduh SRT (.srt)</span>
+              </button>
+              <button id="dlVttBtn" class="btn-download">
+                <span class="btn-icon">🌐</span>
+                <span>Unduh WebVTT (.vtt)</span>
+              </button>
+              <button id="dlAssBtn" class="btn-download">
+                <span class="btn-icon">🎨</span>
+                <span>Unduh ASS (.ass)</span>
+              </button>
+              <button id="dlTxtBtn" class="btn-download">
+                <span class="btn-icon">📝</span>
+                <span>Unduh Teks (.txt)</span>
+              </button>
+            </div>
+            <button id="copySrtBtn" class="btn-copy">📋 Salin Teks Format SRT ke Clipboard</button>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Cues List -->
+        <div class="editor-cues-col">
+          <div class="cues-header">
+            <h3>Daftar Baris Subtitle (<span id="cuesCountBadge">0</span>)</h3>
+            <button id="addNewCueBtn" class="btn-secondary-sm">+ Tambah Baris Baru</button>
+          </div>
+          <div id="cuesList" class="cues-list"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ── TAB 3: VOCABULARY & PRONUNCIATION LEARNER ── -->
+    <div id="tab-vocab" class="tab-content">
+      <div class="vocab-grid">
+        
+        <!-- Add Rule Card -->
+        <div class="card vocab-card">
+          <h3>Tambah Aturan Koreksi Kata</h3>
+          <p class="card-desc">Jika Whisper salah mendengar kata teknis atau istilah tertentu, tambahkan aturan di sini agar otomatis diganti.</p>
+          
+          <form id="vocabForm" class="vocab-form">
+            <div class="form-group">
+              <label for="rawInput">Kata yang Sering Salah Didengar (Raw):</label>
+              <input type="text" id="rawInput" placeholder="Contoh: open word atau sql light" required>
+            </div>
+            <div class="form-group">
+              <label for="correctedInput">Kata yang Benar (Target):</label>
+              <input type="text" id="correctedInput" placeholder="Contoh: OpenWrt atau SQLite" required>
+            </div>
+            <div class="form-group">
+              <label for="domainInput">Kategori / Domain:</label>
+              <select id="domainInput">
+                <option value="general">Umum (General)</option>
+                <option value="networking">Jaringan (Networking)</option>
+                <option value="programming">Pemrograman (Programming)</option>
+                <option value="multimedia">Multimedia & Video</option>
+                <option value="business">Bisnis / Konten Kreator</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary">💾 Simpan Aturan Koreksi</button>
+          </form>
+        </div>
+
+        <!-- Rules List Card -->
+        <div class="card vocab-card">
+          <h3>Daftar Aturan Aktif</h3>
+          <p class="card-desc">Aturan ini langsung diterapkan pada proses pasca-transkripsi dan dijadikan prompt bias.</p>
+          <div class="table-container">
+            <table class="vocab-table">
+              <thead>
+                <tr>
+                  <th>Salah Dengar</th>
+                  <th>Koreksi Benar</th>
+                  <th>Domain</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="vocabTableBody">
+                <tr><td colspan="4" class="empty-state-cell">Memuat aturan...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TAB 4: SYSTEM DIAGNOSTICS ── -->
+    <div id="tab-diag" class="tab-content">
+      <div class="card diag-card">
+        <div class="diag-header">
+          <div>
+            <h3>Diagnostik Sistem & Komponen</h3>
+            <p class="card-desc">Pemeriksaan dependensi lokal untuk memastikan pemrosesan berjalan optimal.</p>
+          </div>
+          <button id="refreshDiagBtn" class="btn-secondary">🔄 Refresh Status</button>
+        </div>
+
+        <div class="diag-grid">
+          <div class="diag-item" id="diagFFmpeg">
+            <div class="diag-icon">🎬</div>
+            <div class="diag-info">
+              <span class="diag-title">FFmpeg Audio Processor</span>
+              <span class="diag-desc">Memeriksa...</span>
+            </div>
+          </div>
+
+          <div class="diag-item" id="diagWhisper">
+            <div class="diag-icon">🧠</div>
+            <div class="diag-info">
+              <span class="diag-title">faster-whisper Engine</span>
+              <span class="diag-desc">Memeriksa...</span>
+            </div>
+          </div>
+
+          <div class="diag-item" id="diagVAD">
+            <div class="diag-icon">🎙️</div>
+            <div class="diag-info">
+              <span class="diag-title">Silero VAD (Voice Detection)</span>
+              <span class="diag-desc">Aktif</span>
+            </div>
+          </div>
+
+          <div class="diag-item" id="diagCache">
+            <div class="diag-icon">💾</div>
+            <div class="diag-info">
+              <span class="diag-title">Model Cache Directory</span>
+              <span class="diag-desc" id="diagCachePath">Memeriksa...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio Quality Report Section (populated after transcription) -->
+        <div id="audioReportSection" style="margin-top: 2rem; display: none;">
+          <h4>Laporan Kualitas Audio Terakhir:</h4>
+          <div class="audio-metrics-grid">
+            <div class="metric-box">
+              <span class="metric-val" id="metricScore">100%</span>
+              <span class="metric-lbl">Skor Kualitas</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-val" id="metricDuration">0s</span>
+              <span class="metric-lbl">Durasi Audio</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-val" id="metricNoise">0.00</span>
+              <span class="metric-lbl">Tingkat Noise</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-val" id="metricCoverage">0%</span>
+              <span class="metric-lbl">Cakupan Suara</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

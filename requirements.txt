@@ -1,0 +1,3 @@
+faster-whisper==1.1.0
+numpy>=1.26.0
+bottle==0.13.4

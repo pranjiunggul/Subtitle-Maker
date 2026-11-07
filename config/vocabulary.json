@@ -1,0 +1,57 @@
+[
+  {
+    "raw": "open word",
+    "corrected": "OpenWrt",
+    "domain": "networking"
+  },
+  {
+    "raw": "open wrt",
+    "corrected": "OpenWrt",
+    "domain": "networking"
+  },
+  {
+    "raw": "micro tik",
+    "corrected": "MikroTik",
+    "domain": "networking"
+  },
+  {
+    "raw": "mikrotik",
+    "corrected": "MikroTik",
+    "domain": "networking"
+  },
+  {
+    "raw": "wire guard",
+    "corrected": "WireGuard",
+    "domain": "networking"
+  },
+  {
+    "raw": "sql light",
+    "corrected": "SQLite",
+    "domain": "database"
+  },
+  {
+    "raw": "sqllite",
+    "corrected": "SQLite",
+    "domain": "database"
+  },
+  {
+    "raw": "post gres",
+    "corrected": "PostgreSQL",
+    "domain": "database"
+  },
+  {
+    "raw": "fast api",
+    "corrected": "FastAPI",
+    "domain": "programming"
+  },
+  {
+    "raw": "f f mpeg",
+    "corrected": "FFmpeg",
+    "domain": "multimedia"
+  },
+  {
+    "raw": "ff mpeg",
+    "corrected": "FFmpeg",
+    "domain": "multimedia"
+  }
+]
